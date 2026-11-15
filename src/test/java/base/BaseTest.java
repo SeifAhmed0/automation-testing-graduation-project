@@ -1,6 +1,5 @@
 package base;
 
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.*;
 import utils.ConfigReader;
