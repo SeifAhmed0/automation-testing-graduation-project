@@ -10,5 +10,6 @@
   "EmptyLogin": {
     "Username": "",
     "Password": ""
-  }
+  },
+  "EmployeeNames": ["ben", "qwqwqw"]
 }

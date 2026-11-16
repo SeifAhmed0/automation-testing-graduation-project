@@ -25,6 +25,14 @@ public class LoginPage extends BasePage {
         super(driver);
     }
 
+    private void login(WebDriverWait wait, JsonNode loginData) {
+        String username = loginData.get("Username").asString();
+        String password = loginData.get("Password").asString();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(usernameInputLoc)).sendKeys(username);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(passwordInputLoc)).sendKeys(password);
+        wait.until(ExpectedConditions.elementToBeClickable(loginBtnLoc)).click();
+    }
+
     public void verifyValidLogin(){
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         try {
@@ -66,11 +74,5 @@ public class LoginPage extends BasePage {
         return false;
     }
 
-    private void login(WebDriverWait wait, JsonNode loginData) {
-        String username = loginData.get("Username").asString();
-        String password = loginData.get("Password").asString();
-        wait.until(ExpectedConditions.visibilityOfElementLocated(usernameInputLoc)).sendKeys(username);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(passwordInputLoc)).sendKeys(password);
-        wait.until(ExpectedConditions.elementToBeClickable(loginBtnLoc)).click();
-    }
+
 }
