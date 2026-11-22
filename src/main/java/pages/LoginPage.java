@@ -3,8 +3,6 @@ package pages;
 import base.BasePage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import tools.jackson.databind.JsonNode;
@@ -12,17 +10,21 @@ import utils.DataProvider;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LoginPage extends BasePage {
+    private final WebDriverWait wait;
     private final By usernameInputLoc = By.cssSelector("input[placeholder=\"Username\"]");
     private final By passwordInputLoc = By.cssSelector("input[placeholder=\"Password\"]");
     private final By loginBtnLoc = By.className("oxd-button");
     private final By errorMsgLoc = By.cssSelector("p[class=\"oxd-text oxd-text--p oxd-alert-content-text\"]");
     private final By requiredMsgLoc = By.className("oxd-input-field-error-message");
+    private final By orangeHRMFooter = By.xpath("//a[.=\"OrangeHRM, Inc\"]");
 
     public LoginPage(WebDriver driver) {
         super(driver);
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     private void login(WebDriverWait wait, JsonNode loginData) {
@@ -33,8 +35,7 @@ public class LoginPage extends BasePage {
         wait.until(ExpectedConditions.elementToBeClickable(loginBtnLoc)).click();
     }
 
-    public void verifyValidLogin(){
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    public void validLogin(){
         try {
             JsonNode data = DataProvider.JsonReader();
             JsonNode validLogin = data.get("ValidLogin");
@@ -44,8 +45,7 @@ public class LoginPage extends BasePage {
         }
     }
 
-    public boolean verifyInvalidLogin(){
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    public boolean invalidLogin(){
         try {
             JsonNode data = DataProvider.JsonReader();
             JsonNode invalidLogin = data.get("InvalidLogin");
@@ -57,21 +57,27 @@ public class LoginPage extends BasePage {
         return false;
     }
 
-    public boolean verifyEmptyLogin(){
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    public boolean emptyLogin(){
         try {
             JsonNode data = DataProvider.JsonReader();
             JsonNode emptyLogin = data.get("EmptyLogin");
             login(wait, emptyLogin);
             boolean firstRequired = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(requiredMsgLoc)).getFirst().isDisplayed();
             boolean secondRequired = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(requiredMsgLoc)).getLast().isDisplayed();
-            if (firstRequired == secondRequired == true) {
-                return true;
-            }
+            return firstRequired == secondRequired == true;
         } catch (IOException e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public boolean orangeHRMFooter(){
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(orangeHRMFooter)).getText().contains("OrangeHRM, Inc");
+    }
+    public WebDriver orangeHRMFooterLinkToClick(){
+        driver.findElement(orangeHRMFooter).click();
+        List<String> tabs = new ArrayList<>(driver.getWindowHandles());
+        return driver.switchTo().window(tabs.get(1));
     }
 
 

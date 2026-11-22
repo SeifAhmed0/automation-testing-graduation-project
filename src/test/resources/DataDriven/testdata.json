@@ -11,5 +11,10 @@
     "Username": "",
     "Password": ""
   },
-  "EmployeeNames": ["ben", "qwqwqw"]
+  "EmployeeNames": ["Charles", "qwqwqw"],
+  "NewEmployee": {
+    "FirstName": "",
+    "MiddleName": "",
+    "LastName": "Seif"
+  }
 }
