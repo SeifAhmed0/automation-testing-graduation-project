@@ -108,3 +108,8 @@ The demo site is public. Credentials: username `Admin`, password `admin123`.
 ## Author
 
 **Seif Ahmed** (Junior Software Test Engineer)
+---
+
+<p align="center">
+  <img src="assets/SeifAhmedSignature.svg" alt="Seif Ahmed — Junior Software Test Engineer" width="380">
+</p>
