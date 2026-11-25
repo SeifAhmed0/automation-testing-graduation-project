@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 import pages.HomePage;
 import pages.LoginPage;
 import pages.PIMPage;
+import utils.ConfigReader;
 
 @Epic("OrangeHRM")
 public class PIMTest extends BaseTest {
@@ -96,22 +97,37 @@ public class PIMTest extends BaseTest {
     }
 
     //TC8
-//    @Test
-//    public void verifyAddEmpSuccessfully() {
-//        WebDriver driver = Driver.getDriver();
-//        LoginPage lp = new LoginPage(driver);
-//        HomePage hp = new HomePage(driver);
-//        PIMPage pp = new PIMPage(driver);
-//        lp.verifyValidLogin();
-//        Assert.assertTrue(hp.isDashboardDisplayed());
-//        hp.pimNavigator();
-//        Assert.assertTrue(pp.empListPageVerification());
-//        Assert.assertTrue(pp.addEmpPage());
-//        List<WebElement> addEmpList = pp.addEmpSuccessfullyPage();
-//        addEmpList.get(0).sendKeys(ConfigReader.get("first.name"));
-//        addEmpList.get(1).sendKeys(ConfigReader.get("last.name"));
-//        addEmpList.get(2).click();
-//    }
+    @Test(description = "TC8 - Add a new employee successfully (end-to-end)")
+    @Feature("PIM")
+    @Story("Add employee end-to-end")
+    @Severity(SeverityLevel.BLOCKER)
+    @Owner("Seif Ahmed")
+    @TmsLink("TC-8")
+    @Description("Add a new employee, verify the Personal Details page opens, then find the employee in the Employee List.")
+    public void verifyAddEmpSuccessfully() {
+        WebDriver driver = Driver.getDriver();
+        LoginPage lp = new LoginPage(driver);
+        HomePage hp = new HomePage(driver);
+        PIMPage pp = new PIMPage(driver);
+
+        // unique name, so reruns never clash and the search can only match this employee
+        String firstName = ConfigReader.get("first.name") + System.currentTimeMillis();
+        String lastName = ConfigReader.get("last.name");
+
+        lp.validLogin();                                                   // Log in
+        Assert.assertTrue(hp.isDashboardDisplayed(), "Dashboard was not displayed after login");
+        hp.pimNavigator();                                                 // Navigate to PIM
+        Assert.assertTrue(pp.empListPageVerification(), "Incorrect Page!");
+        Assert.assertTrue(pp.addEmpPage(), "Add Employee page was not displayed");
+        pp.enterEmployeeName(firstName, lastName);                         // Enter first and last name
+        pp.clickSave();                                                    // Click Save
+        Assert.assertTrue(pp.isPersonalDetailsOpenedFor(firstName),
+                "Personal Details page did not open for " + firstName);    // Assert Personal Details
+        pp.goToEmployeeList();                                             // Back to Employee List
+        pp.searchEmployee(firstName);                                      // Search for the new employee
+        Assert.assertTrue(pp.isEmployeeInResults(firstName),
+                "New employee '" + firstName + "' was not found in the results");
+    }
 
     //TC9
     @Test(description = "TC9 - Verify Admin > Add User page")

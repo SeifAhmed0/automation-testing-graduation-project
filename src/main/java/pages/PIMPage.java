@@ -1,9 +1,9 @@
 package pages;
 
 import base.BasePage;
+import io.qameta.allure.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import tools.jackson.databind.JsonNode;
@@ -11,8 +11,6 @@ import utils.DataProvider;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
 public class PIMPage extends BasePage {
     private final WebDriverWait wait;
@@ -20,7 +18,6 @@ public class PIMPage extends BasePage {
     private final By empNameFieldLoc = By.xpath("(//input[@placeholder=\"Type for hints...\"])[1]");
     private final By searchBtnLoc = By.className("orangehrm-left-space");
     private final By empNameRecordLoc = By.xpath("//div[@role=\"cell\"]//div[normalize-space()=\"Charles\"]");
-    private final By empNameSeifRecordLoc = By.xpath("//div[@role=\"cell\"]//div[normalize-space()=\"Seif\"]");
     private final By noRecordsFoundMsgLoc = By.xpath("(//span[@class=\"oxd-text oxd-text--span\"])[1]");
     private final By addEmpBtnLoc = By.xpath("//a[@class=\"oxd-topbar-body-nav-tab-item\"][.=\"Add Employee\"]");
     private final By firstNameFieldLoc = By.name("firstName");
@@ -29,13 +26,13 @@ public class PIMPage extends BasePage {
     private final By missingFNErrorMsgLoc = By.className("oxd-input-field-error-message");
     private final By employeeListBtnLoc = By.xpath("//a[@class=\"oxd-topbar-body-nav-tab-item\"][.=\"Employee List\"]");
     private final By personalFN = By.cssSelector("input[placeholder=\"First Name\"]");
-    private final By personalLN = By.cssSelector("input[placeholder=\"Last Name\"]");
     private final By adminLoc = By.xpath("(//span[@class=\"oxd-text oxd-text--span oxd-main-menu-item--name\"])[1]");
     private final By addUserBtnLoc = By.cssSelector("button[class=\"oxd-button oxd-button--medium oxd-button--secondary\"]");
     private final By userRoleLoc = By.xpath("(//label[@class=\"oxd-label oxd-input-field-required\"])[1]");
     private final By empNameLoc = By.xpath("(//label[@class=\"oxd-label oxd-input-field-required\"])[2]");
     private final By userNameLoc = By.xpath("(//label[@class=\"oxd-label oxd-input-field-required\"])[4]");
     private final By passwordLoc = By.xpath("(//label[@class=\"oxd-label oxd-input-field-required\"])[5]");
+    private final By submitBtnLoc = By.cssSelector("button[type='submit']");
 
 
     public PIMPage(WebDriver driver) {
@@ -43,13 +40,6 @@ public class PIMPage extends BasePage {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
-
-    public By getEmpListBtn(){
-        return employeeListBtnLoc;
-    }
-    public WebElement clickable(By locator){
-        return wait.until(ExpectedConditions.elementToBeClickable(locator));
-    }
 
     public boolean empListPageVerification() {
         return wait.until(ExpectedConditions.visibilityOfElementLocated(empInfoTitleLoc)).isDisplayed();
@@ -115,36 +105,42 @@ public class PIMPage extends BasePage {
         return false;
     }
 
-    public List<WebElement> addEmpSuccessfullyPage() {
-        List<WebElement> newEmpDataList = new ArrayList<>();
-        WebElement eleFN = wait.until(ExpectedConditions.visibilityOfElementLocated(firstNameFieldLoc));
-        WebElement eleLN = wait.until(ExpectedConditions.visibilityOfElementLocated(lastNameFieldLoc));
-        WebElement eleSaveBtn = wait.until(ExpectedConditions.elementToBeClickable(saveBtnLoc));
-        newEmpDataList.add(eleFN);
-        newEmpDataList.add(eleLN);
-        newEmpDataList.add(eleSaveBtn);
-        return newEmpDataList;
+    @Step("Enter employee name: first '{firstName}', last '{lastName}'")
+    public void enterEmployeeName(String firstName, String lastName) {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(firstNameFieldLoc)).sendKeys(firstName);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(lastNameFieldLoc)).sendKeys(lastName);
     }
 
-    public List<WebElement> empPersonalDetailsPage() {
-        List<WebElement> pDList = new ArrayList<>();
-        WebElement elePFN = wait.until(ExpectedConditions.visibilityOfElementLocated(personalFN));
-        WebElement elePLN = wait.until(ExpectedConditions.visibilityOfElementLocated(personalLN));
-        pDList.add(elePFN);
-        pDList.add(elePLN);
-        return pDList;
+    @Step("Click Save")
+    public void clickSave() {
+        clickWhenReady(submitBtnLoc);
     }
 
-//    public List<WebElement> searchExistingNewEmpPage() {
-//        List<WebElement> searchDataList = new ArrayList<>();
-//        WebElement nameField = wait.until(ExpectedConditions.elementToBeClickable(empNameFieldLoc));
-//        WebElement searchBtn = wait.until(ExpectedConditions.elementToBeClickable(searchBtnLoc));
-//        WebElement empNameRec = wait.until(ExpectedConditions.visibilityOfElementLocated(empNameRecordLoc));
-//        searchDataList.add(nameField);
-//        searchDataList.add(searchBtn);
-//        searchDataList.add(empNameRec);
-//        return searchDataList;
-//    }
+    @Step("Verify the Personal Details page opened for '{firstName}'")
+    public boolean isPersonalDetailsOpenedFor(String firstName) {
+        wait.until(ExpectedConditions.urlContains("/pim/viewPersonalDetails/empNumber/"));
+        waitForLoaderToDisappear();
+        // the field is filled by the page after it loads, so wait for its value
+        return wait.until(ExpectedConditions.attributeToBe(personalFN, "value", firstName));
+    }
+
+    @Step("Go back to Employee List")
+    public void goToEmployeeList() {
+        clickWhenReady(employeeListBtnLoc);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(empInfoTitleLoc));
+    }
+
+    @Step("Search for employee '{name}'")
+    public void searchEmployee(String name) {
+        wait.until(ExpectedConditions.elementToBeClickable(empNameFieldLoc)).sendKeys(name);
+        clickWhenReady(submitBtnLoc);
+    }
+
+    @Step("Verify '{name}' appears in the results table")
+    public boolean isEmployeeInResults(String name) {
+        By cell = By.xpath("//div[@role='table']//div[@role='cell']//div[contains(normalize-space(), '" + name + "')]");
+        return wait.until(ExpectedConditions.textToBePresentInElementLocated(cell, name));
+    }
 
     public boolean addUserPage(){
         wait.until(ExpectedConditions.elementToBeClickable(adminLoc)).click();
